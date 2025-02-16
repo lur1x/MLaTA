@@ -1,0 +1,9 @@
+/2.12.Queen/
+*.vcxproj.user
+*.user
+*.vcxproj.filters
+*.filters
+*.vcxproj
+*.sln
+*.pdb
+*.vs
