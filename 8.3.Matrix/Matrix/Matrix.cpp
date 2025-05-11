@@ -94,7 +94,7 @@ int main()
 
     for (int k = N * N; k >= 1; --k)
 	{
-        bool found = false;
+		bool found = false;
 		for (int i = N - 1; i >= 0; --i)
 		{
 			for (int j = N - 1; j >= 0; --j)
@@ -139,10 +139,11 @@ int main()
         if (!found) 
         {
 			outputFile << 0 << std::endl;
+			std::cout << "Matrix could not be found" << std::endl;
             return 0;
         }
     }
-
+	std::cout << "The matrix was successfully determined" << std::endl;
 	PrintMatrix(A, N, outputFile);
 
     auto end = std::chrono::high_resolution_clock::now();
