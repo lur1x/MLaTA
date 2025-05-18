@@ -76,5 +76,8 @@ int main()
 		outputFile << "Количество вариантов: " << countNumbers << std::endl;
 	}
 	
+	inputFile.close();
+	outputFile.close();
+
 	return 0;
 }
