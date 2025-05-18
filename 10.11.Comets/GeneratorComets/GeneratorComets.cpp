@@ -6,6 +6,8 @@
 
 int main()
 {
+
+
 	std::ofstream inputFile("../Comets/INPUT.TXT");
 
 	const int N = 2000;
