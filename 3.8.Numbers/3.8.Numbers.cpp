@@ -43,7 +43,7 @@ unsigned long long CounNumbersVariant(int N)
 			return 0;
 		}
 
-		A[n] = 3 * A[n - 1] + 4 * B[n - 1];
+		A[n] = 3 * A[n - 1] + 3 * B[n - 1];
 		B[n] = A[n - 1];
 	}
 
@@ -73,7 +73,7 @@ int main()
 			return 1;
 		}
 
-		outputFile << "Количество вариантов: " << countNumbers << std::endl;
+		outputFile << countNumbers << std::endl;
 	}
 	
 	inputFile.close();
