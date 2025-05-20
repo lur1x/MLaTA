@@ -53,25 +53,19 @@ double TernarySearch(const std::vector<std::pair<int, int>>& comets, double left
 {
 	while (right - left > precision)
 	{
-		//double mid1 = left + (right - left) / 3.0;
-		//double mid2 = right - (right - left) / 3.0;
+		double mid1 = left + (right - left) / 3.0;
+		double mid2 = right - (right - left) / 3.0;
 
-		double left3 =  (2 * left + right) / 3.0;
-		double right3 = (left + 2 * right) / 3.0;
+		double y1 = CalculateMax(comets, mid1);
+		double y2 = CalculateMax(comets, mid2);
 
-		//double y1 = CalculateMax(comets, mid1);
-		//double y2 = CalculateMax(comets, mid2);
-
-		double y1 = CalculateMax(comets, left3);
-		double y2 = CalculateMax(comets, right3);
-
-		if (y1 <= y2)
+		if (y1 < y2)
 		{
-			right = right3;
+			right = mid2;
 		}
 		else
 		{
-			left = left3;
+			left = mid1;
 		}
 		
 	}
@@ -94,9 +88,11 @@ int main()
 		input >> comets[i].first >> comets[i].second;
 	}
 
+	const double precision = 1e-12;
+
 	double left = 0.0;
 	double right = T;
-	double precision = 1e-15;
+	
 
 	double minMax = TernarySearch(comets, left, right, precision);
 

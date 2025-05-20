@@ -10,7 +10,7 @@ int main()
 
 	std::ofstream inputFile("../Comets/INPUT.TXT");
 
-	const int N = 2000;
+	const int N = 190;
 	const int T = 2000;
 
 	std::mt19937 rng(time(nullptr));
