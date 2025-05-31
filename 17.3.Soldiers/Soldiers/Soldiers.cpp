@@ -40,8 +40,8 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <vector>
-#include <chrono>
 
 using namespace std;
 
@@ -74,21 +74,26 @@ public:
 		return res;
 	}
 
-	int findPosition(int sum)
+	// Бинарный поиск первого индекса, где сумма >= target
+	int find(int target)
 	{
-		int bitMask = 1 << 20;
-		int index = 0;
-		while (bitMask != 0)
+		int left = 1, right = tree.size() - 1;
+		int pos = 0;
+		while (left <= right)
 		{
-			int nextIndex = index + bitMask;
-			if (nextIndex < tree.size() && tree[nextIndex] < sum)
+			int mid = (left + right) / 2;
+			int sum = query(mid);
+			if (sum >= target)
 			{
-				sum -= tree[nextIndex];
-				index = nextIndex;
+				pos = mid;
+				right = mid - 1;
 			}
-			bitMask >>= 1;
+			else
+			{
+				left = mid + 1;
+			}
 		}
-		return index + 1;
+		return pos;
 	}
 };
 
@@ -97,39 +102,62 @@ int main()
 	ifstream input("INPUT.TXT");
 	ofstream output("OUTPUT.TXT");
 
-	auto start = std::chrono::high_resolution_clock::now();
-
 	int N;
 	input >> N;
 
-	FenwickTree fenwick(200000);
-	vector<int> soldiers;
+	// Для хранения всех возможных ростов и их порядка
+	vector<int> all_heights;
+	vector<pair<int, int>> commands;
 
+	// Считываем все команды и собираем все возможные роста
 	for (int i = 0; i < N; ++i)
 	{
 		int command, value;
 		input >> command >> value;
+		commands.push_back({ command, value });
+		if (command == 1)
+		{
+			all_heights.push_back(value);
+		}
+	}
+
+	// Сортируем и удаляем дубликаты
+	sort(all_heights.begin(), all_heights.end(), greater<int>());
+	all_heights.erase(unique(all_heights.begin(), all_heights.end()), all_heights.end());
+
+	// Создаем отображение рост -> сжатый индекс
+	map<int, int> compressed;
+	for (int i = 0; i < all_heights.size(); ++i)
+	{
+		compressed[all_heights[i]] = i + 1;
+	}
+
+	FenwickTree fenwick(all_heights.size());
+
+	for (const auto& cmd : commands)
+	{
+		int command = cmd.first;
+		int value = cmd.second;
 
 		if (command == 1)
 		{
 			// Вставка солдата
-			int pos = fenwick.query(200000) - fenwick.query(value) + 1;
-			output << pos << endl;
-			soldiers.insert(soldiers.begin() + (pos - 1), value);
-			fenwick.update(value, 1);
+			int pos = compressed[value];
+			// Количество солдат с ростом >= текущего
+			int k = fenwick.query(pos);
+			output << (k + 1) << "\n";
+			fenwick.update(pos, 1);
 		}
-		else
+		else if (command == 2)
 		{
-			// Удаление солдата
-			int height = soldiers[value - 1];
-			fenwick.update(height, -1);
-			soldiers.erase(soldiers.begin() + (value - 1));
+			// Удаление солдата с позиции value
+			int pos = fenwick.find(value);
+			if (pos > 0)
+			{
+				fenwick.update(pos, -1);
+			}
 		}
 	}
-
-	auto end = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<float> duration = end - start;
-	std::cout << "Time: " << duration.count() << std::endl;
 
 	return 0;
 }
