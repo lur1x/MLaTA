@@ -1,5 +1,4 @@
 /*
-*
 8.3. Матрица (8)
 В матрице A размера N×N числа от 1 до N2. Каждое число записано ровно один раз. Даны две матрицы
 размера N × N: Top и Left. Значение Topi j определяет количество чисел, больших Ai j и
@@ -40,12 +39,15 @@ Top и Left. Тогда заполненная матрица не будет п
 
 */
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <vector>
 #include <chrono>
+#include <algorithm>
+#include <iomanip> 
 
-using  Matrix = std::vector<std::vector<int>>;
+using Matrix = std::vector<std::vector<int>>;
+using Position = std::pair<int, int>;
 
 void ReadMatrix(Matrix& matrix, const int N, std::ifstream& input)
 {
@@ -74,82 +76,110 @@ void PrintMatrix(Matrix& matrix, const int N, std::ofstream& output)
 	}
 }
 
-int main() 
+int main()
 {
-    std::ifstream inputFile("INPUT.TXT");
+	std::ifstream inputFile("INPUT.TXT");
 	std::ofstream outputFile("OUTPUT.TXT");
 
-	auto start = std::chrono::high_resolution_clock::now();
-
-    int N;
+	int N;
 	inputFile >> N;
 
     Matrix top(N, std::vector<int>(N));
 	ReadMatrix(top, N, inputFile);
 
-    Matrix left(N, std::vector<int>(N));
+	Matrix left(N, std::vector<int>(N));
 	ReadMatrix(left, N, inputFile);
 
-    Matrix A(N, std::vector<int>(N, 0));
+	Matrix A(N, std::vector<int>(N, 0));
 
-    for (int k = N * N; k >= 1; --k)
+	auto start = std::chrono::high_resolution_clock::now();
+
+	for (int num = 1; num <= N * N; ++num)
 	{
-		bool found = false;
-		for (int i = N - 1; i >= 0; --i)
+		std::vector<Position> row_candidates;
+		std::vector<Position> col_candidates;
+
+		for (int i = 0; i < N; ++i)
 		{
 			for (int j = N - 1; j >= 0; --j)
 			{
-                if (A[i][j] != 0) 
-                {
-                    continue;
-                }
-                int leftCount = 0;
-                for (int x = 0; x < j; ++x) 
-                {
-                    if (A[i][x] != 0) 
-                    {
-						leftCount++;
-                    }
-                }
-				if (leftCount != left[i][j]) 
-                {
-                    continue;
-                }
-                int topCount = 0;
-                for (int y = 0; y < i; ++y) 
-                {
-                    if (A[y][j] != 0) 
-                    {
-						topCount++;
-                    }
-                }
-				if (topCount != top[i][j]) 
-                {
-                    continue;
-                }
-                A[i][j] = k;
-                found = true;
-                break;
-            }
-            if (found) 
-            {
-                break;
-            }
-        }
-        if (!found) 
-        {
-			outputFile << 0 << std::endl;
-			std::cout << "Matrix could not be found" << std::endl;
-            return 0;
-        }
-    }
-	std::cout << "The matrix was successfully determined" << std::endl;
-	PrintMatrix(A, N, outputFile);
+				if (left[i][j] == j && A[i][j] == 0)
+				{
+					row_candidates.emplace_back(i, j);
+					break;
+				}
+			}
+		}
 
-    auto end = std::chrono::high_resolution_clock::now();
+		for (int j = 0; j < N; ++j)
+		{
+			for (int i = N - 1; i >= 0; --i)
+			{
+				if (top[i][j] == i && A[i][j] == 0)
+				{
+					col_candidates.emplace_back(i, j);
+					break;
+				}
+			}
+		}
+
+		Position pos = { -1, -1 };
+		for (auto rc : row_candidates)
+		{
+			for (auto cc : col_candidates)
+			{
+				if (rc == cc)
+				{
+					pos = rc;
+					break;
+				}
+			}
+			if (pos.first != -1)
+				break;
+		}
+
+		if (pos.first == -1)
+		{
+			if (!row_candidates.empty())
+			{
+				pos = row_candidates[0];
+			}
+			else if (!col_candidates.empty())
+			{
+				pos = col_candidates[0];
+			}
+			else
+			{
+				outputFile << 0 << std::endl;
+				std::cout << "Matrix could not be found" << std::endl;
+				return 0;
+			}
+		}
+
+		int i = pos.first, j = pos.second;
+		A[i][j] = num;
+
+		top[i][j] = -1;
+		left[i][j] = -1;
+
+		for (int k = j + 1; k < N; ++k)
+		{
+			if (left[i][k] != -1)
+				left[i][k]++;
+		}
+		for (int k = i + 1; k < N; ++k)
+		{
+			if (top[k][j] != -1)
+				top[k][j]++;
+		}
+	}
+
+	auto end = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<float> duration = end - start;
 	std::cout << "Time: " << duration.count() << std::endl;
 
-    return 0;
-}
+	std::cout << "The matrix was successfully determined" << std::endl;
+	PrintMatrix(A, N, outputFile);
 
+	return 0;
+}
