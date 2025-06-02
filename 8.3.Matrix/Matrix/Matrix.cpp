@@ -96,8 +96,8 @@ int main()
 
 	for (int num = 1; num <= N * N; ++num)
 	{
-		std::vector<Position> row_candidates;
-		std::vector<Position> col_candidates;
+		std::vector<Position> rowСandidates;
+		std::vector<Position> colСandidates;
 
 		for (int i = 0; i < N; ++i)
 		{
@@ -105,7 +105,7 @@ int main()
 			{
 				if (left[i][j] == j && A[i][j] == 0)
 				{
-					row_candidates.emplace_back(i, j);
+					rowСandidates.emplace_back(i, j);
 					break;
 				}
 			}
@@ -117,16 +117,16 @@ int main()
 			{
 				if (top[i][j] == i && A[i][j] == 0)
 				{
-					col_candidates.emplace_back(i, j);
+					colСandidates.emplace_back(i, j);
 					break;
 				}
 			}
 		}
 
 		Position pos = { -1, -1 };
-		for (auto rc : row_candidates)
+		for (auto rc : rowСandidates)
 		{
-			for (auto cc : col_candidates)
+			for (auto cc : colСandidates)
 			{
 				if (rc == cc)
 				{
@@ -140,13 +140,13 @@ int main()
 
 		if (pos.first == -1)
 		{
-			if (!row_candidates.empty())
+			if (!rowСandidates.empty())
 			{
-				pos = row_candidates[0];
+				pos = rowСandidates[0];
 			}
-			else if (!col_candidates.empty())
+			else if (!colСandidates.empty())
 			{
-				pos = col_candidates[0];
+				pos = colСandidates[0];
 			}
 			else
 			{
@@ -180,6 +180,9 @@ int main()
 
 	std::cout << "The matrix was successfully determined" << std::endl;
 	PrintMatrix(A, N, outputFile);
+
+	inputFile.close();
+	outputFile.close();
 
 	return 0;
 }
