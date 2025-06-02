@@ -28,19 +28,21 @@
 
 int main()
 {
-	std::ifstream in("INPUT.TXT");
-	std::ofstream out("OUTPUT.TXT");
+	std::ifstream inputFile("INPUT.TXT");
+	std::ofstream outputFile("OUTPUT.TXT");
 
 	long long N;
-	in >> N;
+	inputFile >> N;
 
 	if (N == 2)
 	{
-		out << 0 << std::endl;
+		outputFile << 0 << std::endl;
+		inputFile.close();
+		outputFile.close();
 		return 0;
 	}
 
-	long long d_min = N;
+	long long dMin = N;
 	long long i = 1;
 	while (i * i <= N)
 	{
@@ -48,21 +50,26 @@ int main()
 		{
 			if (i >= 3)
 			{
-				d_min = std::min(d_min, i);
+				dMin = std::min(dMin, i);
 			}
 			long long j = N / i;
 			if (j >= 3)
 			{
-				d_min = std::min(d_min, j);
+				dMin = std::min(dMin, j);
 			}
+
 		}
-		i++;
-		if (d_min == 3)
+		if (dMin == 3)
 		{
 			break;
 		}
+
+		i++;
 	}
 
-	out << d_min - 1 << std::endl;
+	outputFile << dMin - 1 << std::endl;
+
+	inputFile.close();
+	outputFile.close();
 	return 0;
 }
