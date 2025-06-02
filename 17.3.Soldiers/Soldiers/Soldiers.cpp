@@ -41,75 +41,12 @@
 #include <fstream>
 #include <iostream>
 #include <map>
-#include <vector>
+#include <chrono>
 
-using namespace std;
+#include "FenwickTree.h"
 
-class FenwickTree
+void ReadCommandFile(std::ifstream& input, const int& N, std::vector<std::pair<int, int>>& commands, std::vector<int>& allHeights)
 {
-private:
-	vector<int> tree;
-
-public:
-	FenwickTree(int size)
-		: tree(size + 1, 0)
-	{
-	}
-
-	void update(int index, int delta)
-	{
-		for (; index < tree.size(); index += index & -index)
-		{
-			tree[index] += delta;
-		}
-	}
-
-	int query(int index)
-	{
-		int res = 0;
-		for (; index > 0; index -= index & -index)
-		{
-			res += tree[index];
-		}
-		return res;
-	}
-
-	// Бинарный поиск первого индекса, где сумма >= target
-	int find(int target)
-	{
-		int left = 1, right = tree.size() - 1;
-		int pos = 0;
-		while (left <= right)
-		{
-			int mid = (left + right) / 2;
-			int sum = query(mid);
-			if (sum >= target)
-			{
-				pos = mid;
-				right = mid - 1;
-			}
-			else
-			{
-				left = mid + 1;
-			}
-		}
-		return pos;
-	}
-};
-
-int main()
-{
-	ifstream input("INPUT.TXT");
-	ofstream output("OUTPUT.TXT");
-
-	int N;
-	input >> N;
-
-	// Для хранения всех возможных ростов и их порядка
-	vector<int> all_heights;
-	vector<pair<int, int>> commands;
-
-	// Считываем все команды и собираем все возможные роста
 	for (int i = 0; i < N; ++i)
 	{
 		int command, value;
@@ -117,22 +54,36 @@ int main()
 		commands.push_back({ command, value });
 		if (command == 1)
 		{
-			all_heights.push_back(value);
+			allHeights.push_back(value);
 		}
 	}
+}
 
-	// Сортируем и удаляем дубликаты
-	sort(all_heights.begin(), all_heights.end(), greater<int>());
-	all_heights.erase(unique(all_heights.begin(), all_heights.end()), all_heights.end());
+int main()
+{
+	std::ifstream input("INPUT.TXT");
+	std::ofstream output("OUTPUT.TXT");
 
-	// Создаем отображение рост -> сжатый индекс
-	map<int, int> compressed;
-	for (int i = 0; i < all_heights.size(); ++i)
+	int N;
+	input >> N;
+
+	std::vector<std::pair<int, int>> commands;
+	std::vector<int> allHeights;
+
+	auto start = std::chrono::high_resolution_clock::now();
+
+	ReadCommandFile(input, N, commands, allHeights);
+
+	std::sort(allHeights.begin(), allHeights.end(), std::greater<int>());
+	allHeights.erase(unique(allHeights.begin(), allHeights.end()), allHeights.end());
+
+	std::map<int, int> universal;
+	for (int i = 0; i < allHeights.size(); ++i)
 	{
-		compressed[all_heights[i]] = i + 1;
+		universal[allHeights[i]] = i + 1;
 	}
 
-	FenwickTree fenwick(all_heights.size());
+	FenwickTree fenwick(allHeights.size());
 
 	for (const auto& cmd : commands)
 	{
@@ -141,23 +92,26 @@ int main()
 
 		if (command == 1)
 		{
-			// Вставка солдата
-			int pos = compressed[value];
-			// Количество солдат с ростом >= текущего
-			int k = fenwick.query(pos);
+			int pos = universal[value];
+			int k = fenwick.Query(pos);
 			output << (k + 1) << "\n";
-			fenwick.update(pos, 1);
+			fenwick.Update(pos, 1);
 		}
 		else if (command == 2)
 		{
-			// Удаление солдата с позиции value
-			int pos = fenwick.find(value);
+			int pos = fenwick.FindPosition(value);
 			if (pos > 0)
 			{
-				fenwick.update(pos, -1);
+				fenwick.Update(pos, -1);
 			}
 		}
 	}
 
+	auto end = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<float> duration = end - start;
+	std::cout << "Time: " << duration.count() << std::endl;
+
+	input.close();
+	output.close();
 	return 0;
 }
